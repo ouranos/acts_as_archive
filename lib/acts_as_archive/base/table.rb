@@ -26,9 +26,9 @@ module ActsAsArchive
         def create_archive_table
           if table_exists? && !archive_table_exists?
             connection.execute(%{
-              CREATE TABLE archived_#{table_name}
+              CREATE TABLE `archived_#{table_name}`
                 #{"ENGINE=InnoDB" if connection.class.to_s.include?('Mysql')}
-                AS SELECT * from #{table_name}
+                AS SELECT * from `#{table_name}`
                 WHERE false;
             })
             columns = connection.columns("archived_#{table_name}").collect(&:name)
@@ -56,7 +56,7 @@ module ActsAsArchive
           if column_names.include?('deleted_at')
             if table_exists? && archive_table_exists?
               condition = "deleted_at IS NOT NULL"
-              if self.count_by_sql("SELECT COUNT(*) FROM #{table_name} WHERE #{condition}") > 0
+              if self.count_by_sql("SELECT COUNT(*) FROM `#{table_name}` WHERE #{condition}") > 0
                 # Base::Destroy.copy_to_archive
                 copy_to_archive(condition, true)
               end
@@ -69,7 +69,7 @@ module ActsAsArchive
         def archive_table_indexed_columns
           case connection.class.to_s
           when "ActiveRecord::ConnectionAdapters::MysqlAdapter"
-            index_query = "SHOW INDEX FROM archived_#{table_name}"
+            index_query = "SHOW INDEX FROM `archived_#{table_name}`"
             indexes = connection.select_all(index_query).collect do |r|
               r["Column_name"]
             end
